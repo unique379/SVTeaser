@@ -12,7 +12,22 @@ import sys
 
 
 def update_vcf(ref, insertions, survivor_vcf, out_vcf):
-    """Update the SURVIVOR VCF file to have ref and alt sequences for each variant entry."""
+    """Update the SURVIVOR VCF file to have ref and alt sequences for each variant entry.
+
+    e.g. If a variant entry has the following VCF description
+
+    "chr1   10  INS001  N   <INS>   .   LowQual SVLEN=10"
+
+    Then the entry will be updated with data from ref and insertions fasta to look like
+
+    "chr1   10  INS001  A   ATTTTTTTTTTGGGGGGGGGG   .   LowQual SVLEN=10"
+
+    Args:
+        ref : Path to reference fasta file.
+        insertions : Path to SURVIVOR insertions fasta file.
+        survivor_vcf : Path to SURVIVOR simulated VCF file.
+        out_vcf : Putput path for updated SURVIVOR VCF.
+    """
     print(ref, insertions, survivor_vcf, out_vcf)
     ref = FastaFile(ref)
     insertions = FastaFile(insertions)
@@ -35,7 +50,11 @@ def update_vcf(ref, insertions, survivor_vcf, out_vcf):
         vcf_writer.write_record(record)
 
 def parse_args():
-    """Build parser object with options for sample."""
+    """Build parser object with options for sample.
+
+    Returns:
+        Python argparse parsed object.
+    """
     parser = argparse.ArgumentParser(
         description="A VCF editing utility which adds ref and all sequences to a SURVIVOR fasta file.")
 
