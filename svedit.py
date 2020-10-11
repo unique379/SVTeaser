@@ -9,5 +9,5 @@ out_vcf = pysam.VariantFile("/dev/stdout", 'w', header=header)
 for entry in in_vcf:
     entry = truvari.copy_entry(entry, header)
     entry.ref = "ATCGATACT"
-    entyr.alts = ["A"]
+    entry.alts = ["A"]
     out_vcf.write(entry)
