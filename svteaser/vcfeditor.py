@@ -60,7 +60,11 @@ def update_vcf(ref, insertions, survivor_vcf, out_vcf):
     survivor_vcf = correct_survivor_vcf(survivor_vcf)
     logging.info(" ".join([ref, insertions, survivor_vcf, out_vcf]))
     ref = pysam.FastaFile(ref)
-    insertions = pysam.FastaFile(insertions)
+    try:
+        insertions = pysam.FastaFile(insertions)
+    except OSError: # Sometimes there are no insertions?
+        insertions = None
+        pass
     
     vcf_reader = pysam.VariantFile(survivor_vcf)
     header = vcf_reader.header

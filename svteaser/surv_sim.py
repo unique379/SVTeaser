@@ -29,6 +29,9 @@ def edit_surv_params(fn):
     # might make sense to expose all of these to command line?
     params["TRANSLOCATION_number"] = 0
     params["INVERSION_number"] = 0
+    params["DUPLICATION_number"] = 0
+    params["INV_del_number"] = 0
+    params["INV_dup_number"] = 0
     with open(fn, 'w') as fout:
         for key, val in params.items():
             fout.write(f"{key}: {val}\n")
@@ -72,8 +75,6 @@ def surv_sim_main(args):
         logging.error(ret.stderr)
         exit(ret.ret_code)
     
-    /usr/local/lib/python3.7/site-packages/svteaser/surv_sim.py
-
     update_vcf(args.reference, "simulated.sv.insertions.fa", "simulated.sv.vcf", "simulated.sv.vcf")
     vcf_compress("simulated.sv.vcf")
     logging.info("Finished")
