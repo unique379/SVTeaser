@@ -66,24 +66,29 @@ def generate_regions_from_file(regions_file):
 
 def generate_random_regions(ref_file, region_length, num_regions):
     def generate_region(ref, length):
-        chroms = []
-        for chrm in ref.references:
-            chroms.append(chrm)
+        chridx = randint(0, len(ref.references)-1)
+        chrom = ref.references[chridx]
+        chrom_length = ref.get_reference_length(chrom)
+        num_non_overlap_regions = math.floor(chrom_length/length)
+        randidx = randint(0,num_non_overlap_regions)
 
-        chrmidx = randint(1, len(chroms))
-        chrm = chroms[chrmidx -1]
-        start = randint(1, ref.get_reference_length(chrm) - length)
+        start = randidx*length
         end = start + length
-
-        # Offset by 1 since we started from 1 base for randint
-        return chrm, start - 1, end - 1
+        return randidx, chrom, start, end
 
     ref = pysam.Fastafile(ref_file)
 
     region_list = []
-    for idx in range(num_regions):
-        chrm, start, end = generate_region(ref, region_length)
-        region_list.append((chrm, start, end))
+    while len(region_list) != num_regions:
+        randidx, chrom, start, end = generate_region(ref, region_length) 
+        if chrom in chrom_randidx:
+            if randidx not in chrom_randidx[chrom]:
+                region_list.append((chrom, start, end))
+                chrom_randidx[chrom].append(randidx)
+        else:
+            region_list.append((chrom, start, end))
+            chrom_randidx[chrom] = [randidx]
+
     return region_list
 
 def add_fasta_entry(name, seq, fasta_fh):
@@ -116,16 +121,17 @@ def process_regions(ref_file, regions, out_dir, param_file):
         if (i + 1) % 50 == 0:
             logging.info("Processed {}/{} regions...".format(i + 1, len(regions)))
 
-        # Temporari dir.
+        # Temporary dir.
         temp_dir = os.path.join(out_dir, "temp")
         os.mkdir(temp_dir)
 
-        # Extract ref seequebce.
+        # Extract ref sequence.
         name = "{}_{}_{}".format(chrom, start, end)
         ref_seq = ref.fetch(chrom, start, end)
 
-        # Remove first 800bp and last 800bp, so that the tails
-        # do not contain SVs
+        # Remove some buffer from beginning and ending,
+        # so that the tails do not contain SVs. These will be added
+        # back later on.
         ref_seq_surv = ref_seq[padding:len(ref_seq)-padding]
         # Write ref sequence to temporary fa file.
         temp_ref_fa = os.path.join(temp_dir, "temp_ref.fa")
