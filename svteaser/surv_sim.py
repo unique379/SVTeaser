@@ -1,9 +1,9 @@
 import os
+import math
 import inspect
 import logging
 import argparse
 import subprocess
-import math
 from collections import OrderedDict
 from random import randint
 
@@ -37,7 +37,8 @@ def edit_surv_params(fn):
     params["INV_del_number"] = 0
     params["INV_dup_number"] = 0
     params["INDEL_minimum_length"] = 50
-    params["INDEL_maximum_length"] = 5000
+    params["INDEL_maximum_length"] = 1000
+    params["DUPLICATION_maximum_length"] = 1000
     with open(fn, 'w') as fout:
         for key, val in params.items():
             fout.write(f"{key}: {val}\n")
@@ -85,6 +86,10 @@ def generate_random_regions(ref_file, region_length, num_regions):
             if randidx not in chrom_randidx[chrom]:
                 region_list.append((chrom, start, end))
                 chrom_randidx[chrom].append(randidx)
+            else:
+                logging.critical("Unable to generate %d non-overlapping regions. Reference too short?", num_regions)
+                logging.error("Exiting")
+                exit(1)
         else:
             region_list.append((chrom, start, end))
             chrom_randidx[chrom] = [randidx]
@@ -94,6 +99,7 @@ def generate_random_regions(ref_file, region_length, num_regions):
 def add_fasta_entry(name, seq, fasta_fh):
     fasta_fh.write(">{}\n".format(name))
     fasta_fh.write("{}\n".format(seq))
+    fasta_fh.flush()
 
 def update_altered_fa(ref_seq, altered_ref_seq, padding):
     begin_seq = ref_seq[0:padding]
@@ -139,19 +145,20 @@ def process_regions(ref_file, regions, out_dir, param_file):
 
         # Run SURVIVOR.
         prefix = os.path.join(temp_dir, "simulated")
-        survivor_cmd = ["SURVIVOR",
-                        "simSV",
-                        temp_ref_fa,
-                        param_file,
-                        "0.0",
-                        "0",
-                        prefix]
-        subprocess.check_call(survivor_cmd, stdout=subprocess.DEVNULL, stderr=subprocess.STDOUT)
+        survivor_cmd = " ".join(["SURVIVOR",
+                                 "simSV",
+                                 temp_ref_fa,
+                                 param_file,
+                                 "0.0",
+                                 "0",
+                                 prefix])
+        ret = cmd_exe(survivor_cmd)
+        # should be checking here
+
         # Read output of SURVIVOR
         altered_fa_path = "{}.fasta".format(prefix)
         insertions_fa_path = "{}.insertions.fa".format(prefix)
         sim_vcf = "{}.vcf".format(prefix)
-
         # Update VCF
         temp_vcf = os.path.join(temp_dir, "temp.vcf")
         update_vcf(temp_ref_fa, insertions_fa_path, sim_vcf, temp_vcf, pos_padding=padding)
@@ -202,6 +209,11 @@ def surv_sim_main(args):
         logging.error(f"Output directory {args.output} already exists")
         exit(1)
 
+    # Generate SURVIVOR param file
+    param_file = os.path.join(args.output, "surv_params")
+    generate_surv_params(param_file)
+    edit_surv_params(param_file)
+
     regions = None
     if args.sv_regions:
         # Read sv_regions file, if provided
@@ -213,13 +225,6 @@ def surv_sim_main(args):
                                           args.num_sv_regions)
 
     assert(regions is not None), "No regions to process. Please provide at least 1 region."
-
-    # Generate SURVIVOR param file
-    param_file = os.path.join(os.path.dirname(os.path.realpath(__file__)), "parameter_file")
-    # TODO: Fix param file generation. Crashing with flaoting point exception for some reason...
-    #param_file = os.path.join(args.output, "surv_params")
-    #generate_surv_params(param_file)
-    #edit_surv_params(param_file)
 
     process_regions(args.reference, regions, args.output, param_file)
 
