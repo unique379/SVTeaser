@@ -30,11 +30,14 @@ def update_vcf(ref, insertions, survivor_vcf, out_vcf):
         survivor_vcf : Path to SURVIVOR simulated VCF file.
         out_vcf : Putput path for updated SURVIVOR VCF.
     """
-    print(ref, insertions, survivor_vcf, out_vcf)
     ref = FastaFile(ref)
-    insertions = FastaFile(insertions)
+    try:
+        insertions = FastaFile(insertions)
+    except OSError:
+        # Acceptable when there are no insertions, so insertions fa is empty.
+        pass
     
-    vcf_reader = vcf.Reader(open(survivor_vcf), 'w')
+    vcf_reader = vcf.Reader(open(survivor_vcf, 'r'))
     vcf_writer = vcf.Writer(open(out_vcf, 'w'), vcf_reader)
     for record in vcf_reader:
         chrom = record.CHROM
