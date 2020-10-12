@@ -81,10 +81,11 @@ def update_vcf(ref, insertions, survivor_vcf, out_vcf):
         elif record.id.startswith("DEL"):
             # Handle a DELETION entry
             svlen = record.info['SVLEN']
-            record.ref = ref.fetch(chrom, pos, pos + svlen + 1)
-            record.alts = [ref.fetch(chrom, pos, pos + 1)]
+            record.ref = ref.fetch(chrom, pos - 1, (pos - 1) + svlen + 1)
+            record.alts = [ref.fetch(chrom, pos - 1, pos)]
         else: # just in case inversions or something get through
             continue
+        print("handling outout")
         vcf_writer.write(record)
 
 def parse_args(args):
