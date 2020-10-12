@@ -20,7 +20,7 @@ def sim_reads_art(workdir, coverage=30, readlen=150, meanfrag=400, insertsd=50, 
     except OSError:
         logging.error(f"Cannot change into {workdir} directory")
         exit(1)
-    alt_ref = os.path.join(workdir, 'svteaser.altered.fa')
+    alt_ref = 'svteaser.altered.fa'
     ret = cmd_exe((f"art_illumina -ss {instrument} -sam -na -i {alt_ref} -p "
                    f"-l {readlen} -m {meanfrag} -s {insertsd} -f {coverage} -o art_illumina.simReads"))
     if ret.ret_code != 0:
