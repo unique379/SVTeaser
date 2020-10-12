@@ -9,4 +9,4 @@ rm -rf $OUT_DIR
 mkdir $OUT_DIR
 
 SURVIVOR simSV $SCRIPT_DIR/ref.fa $SCRIPT_DIR/parameter_file 0.0 0 $OUT_DIR/simulated
-python3 $SCRIPT_DIR/../../sv_simulator/vcfeditor.py -r $SCRIPT_DIR/ref.fa -i $OUT_DIR/simulated.insertions.fa -v $OUT_DIR/simulated.vcf -o $SCRIPT_DIR/out.vcf
+python3 $SCRIPT_DIR/../../svteaser/vcfeditor.py -r $SCRIPT_DIR/ref.fa -i $OUT_DIR/simulated.insertions.fa -v $OUT_DIR/simulated.vcf -o $SCRIPT_DIR/out.vcf
