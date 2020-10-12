@@ -3,7 +3,10 @@
 
 
 SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
+OUT_DIR=$SCRIPT_DIR/survivor_output
 
-rm $SCRIPT_DIR/simulated.*
-SURVIVOR simSV $SCRIPT_DIR/ref.fa $SCRIPT_DIR/parameter_file 0.0 0 $SCRIPT_DIR/simulated
-python3 $SCRIPT_DIR/../../sv_simulator/vcfeditor.py -r $SCRIPT_DIR/ref.fa -i $SCRIPT_DIR/simulated.insertions.fa -v $SCRIPT_DIR/simulated.vcf -o $SCRIPT_DIR/out.vcf
+rm -rf $OUT_DIR
+mkdir $OUT_DIR
+
+SURVIVOR simSV $SCRIPT_DIR/ref.fa $SCRIPT_DIR/parameter_file 0.0 0 $OUT_DIR/simulated
+python3 $SCRIPT_DIR/../../sv_simulator/vcfeditor.py -r $SCRIPT_DIR/ref.fa -i $OUT_DIR/simulated.insertions.fa -v $OUT_DIR/simulated.vcf -o $SCRIPT_DIR/out.vcf

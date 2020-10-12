@@ -50,8 +50,8 @@ def update_vcf(ref, insertions, survivor_vcf, out_vcf):
         elif record.ID.startswith("DEL"):
             # Handle a DELETION entry
             svlen = record.INFO['SVLEN']
-            record.REF = ref.fetch(chrom, pos, pos + svlen + 1)
-            record.ALT = [ref.fetch(chrom, pos, pos + 1)]
+            record.REF = ref.fetch(chrom, pos - 1, (pos - 1) + svlen + 1)
+            record.ALT = [ref.fetch(chrom, pos - 1, pos)]
         vcf_writer.write_record(record)
 
 def parse_args():
