@@ -80,6 +80,7 @@ def generate_random_regions(ref_file, region_length, num_regions):
     ref = pysam.Fastafile(ref_file)
 
     region_list = []
+    chrom_randidx = {}
     while len(region_list) != num_regions:
         randidx, chrom, start, end = generate_region(ref, region_length) 
         if chrom in chrom_randidx:
