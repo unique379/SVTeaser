@@ -5,7 +5,10 @@ import pysam
 import pandas as pd
 import argparse
 import os
+import subprocess
 from random import randint
+from vcfeditor import update_vcf
+import vcf
 
 def parse_args():
     """Parse command line arguments.
@@ -19,7 +22,8 @@ def parse_args():
                      simulate SVs on and outputs the following per alteration/simulation of SV \
                      1) the unaltered region of reference in fasta \
                      2) The altered region of reference in fasta \
-                     3) The SVs in a VCF file')
+                     3) The SVs in a VCF file \
+                     NOTE: Please ensure that SURVIVOR is available in the PATH variable.')
 
     parser.add_argument('--ref_file', type=str,
                         help='Path to reference genome file',
@@ -42,31 +46,134 @@ def parse_args():
                         required=False)
     parser.add_argument('--survivor_param_file', type=str,
                         help='This programme uses survivor tool for simulations. We take in the same param file \
-                              as needed by survivor.', required=True) 
+                              as needed by survivor.',
+                        required=False,
+                        default=os.path.join(os.path.dirname(os.path.realpath(__file__)), "parameter_file"))
     parser.add_argument('--out_dir', type=str,
                         help='Path to output directory.', required=True) 
     args = parser.parse_args()
     return args
 
 
-def generate_region(ref, length):
-    chroms = []
-    for chrm in ref.references:
-        chroms.append(chrm)
-        
-    chrmidx = randint(1, len(chroms))
-    print (chrmidx)
-    print (chroms)
-    chrm = chroms[chrmidx -1]
-    start = randint(1, ref.get_reference_length(chrm) - length)
-    end = start + length
+def generate_regions_from_file(regions_file):
+    regions = pd.read_csv(regions_file, sep=", ")
+    region_list = []
+    for index, row in regions.iterrows():
+        # 1. Fetch the region from reference
+        chrm = row['chr']
+        start = row['start']
+        end = row['end']
+        region_list.append((chrm, start, end))
+    return region_list
 
-    # Offset by 1 since we started from 1 base for randint
-    return chrm, start - 1, end - 1 
+def generate_random_regions(ref_file, region_length, num_regions):
+    def generate_region(ref, length):
+        chroms = []
+        for chrm in ref.references:
+            chroms.append(chrm)
 
+        chrmidx = randint(1, len(chroms))
+        chrm = chroms[chrmidx -1]
+        start = randint(1, ref.get_reference_length(chrm) - length)
+        end = start + length
+
+        # Offset by 1 since we started from 1 base for randint
+        return chrm, start - 1, end - 1
+
+    ref = pysam.Fastafile(ref_file)
+
+    region_list = []
+    for idx in range(num_regions):
+        chrm, start, end = generate_region(ref, region_length)
+        region_list.append((chrm, start, end))
+    return region_list
+
+def add_fasta_entry(name, seq, fasta_fh):
+    fasta_fh.write(">{}\n".format(name))
+    fasta_fh.write("{}\n".format(seq))
+
+def process_regions(ref_file, regions, out_dir, param_file):
+    out_vcf_path = os.path.join(out_dir, "svteaser.sim.vcf")
+    out_ref_fa_path = os.path.join(out_dir, "svteaser.ref.fa")
+    out_altered_fa_path = os.path.join(out_dir, "svteaser.altered.fa")
+
+    out_vcf_fh = None
+    out_ref_fa_fh = open(out_ref_fa_path, "w+")
+    out_altered_fa_fh = open(out_altered_fa_path, "w+")
+
+    ref = pysam.FastaFile(ref_file)
+
+    for i, (chrom, start, end) in enumerate(regions):
+        # Track status.
+        if (i + 1) % 50 == 0:
+            print("Processed {}/{} regions...".format(i + 1, len(regions)))
+
+        # Temporari dir.
+        temp_dir = os.path.join(out_dir, "temp")
+        os.mkdir(temp_dir)
+
+        # Extract ref seequebce.
+        name = "{}_{}_{}".format(chrom, start, end)
+        ref_seq = ref.fetch(chrom, start, end)
+
+        # Write ref sequence to temporary fa file.
+        temp_ref_fa = os.path.join(temp_dir, "temp_ref.fa")
+        with open(temp_ref_fa, "w") as fh:
+            add_fasta_entry(name, ref_seq, fh)
+
+        # Run SURVIVOR.
+        prefix = os.path.join(temp_dir, "simulated")
+        survivor_cmd = ["SURVIVOR",
+                        "simSV",
+                        temp_ref_fa,
+                        param_file,
+                        "0.0",
+                        "0",
+                        prefix]
+        subprocess.check_call(survivor_cmd, stdout=subprocess.DEVNULL, stderr=subprocess.STDOUT)
+
+        # Read output of SURVIVOR
+        altered_fa_path = "{}.fasta".format(prefix)
+        insertions_fa_path = "{}.insertions.fa".format(prefix)
+        sim_vcf = "{}.vcf".format(prefix)
+
+        # Update VCF
+        temp_vcf = os.path.join(temp_dir, "temp.vcf")
+        update_vcf(temp_ref_fa, insertions_fa_path, sim_vcf, temp_vcf)
+
+        # Merge seqs and variants entries into single FA/VCF files
+        altered_seq = pysam.FastaFile(altered_fa_path).fetch(name)
+        add_fasta_entry(name, altered_seq, out_altered_fa_fh)
+
+        add_fasta_entry(name, ref_seq, out_ref_fa_fh)
+
+        vcf_reader = vcf.Reader(open(temp_vcf, 'r'))
+        if not out_vcf_fh:
+            out_vcf_fh = vcf.Writer(open(out_vcf_path, 'w'), vcf_reader)
+
+        for record in vcf_reader:
+            out_vcf_fh.write_record(record)
+
+        # Remove temporary files.
+        import shutil
+        shutil.rmtree(temp_dir)
+
+    out_altered_fa_fh.close()
+    out_ref_fa_fh.close()
+    out_vcf_fh.close()
+
+def find_survivor():
+    try:
+        path = subprocess.check_output(["which", "SURVIVOR"])
+    except:
+        print("ERROR: Please add SURVIVOR to your PATH variable and rerun. Thanks!")
+        exit(1)
 
 def main():
     args = parse_args()
+
+    # Check for SURVIVOR.
+    find_survivor()
     
     # Read the reference file
     ref = pysam.Fastafile(args.ref_file)
@@ -75,41 +182,20 @@ def main():
     # Make output dir
     os.mkdir(args.out_dir)
 
-    # Read sv_regions file, if provided
+    regions = None
+
     if args.sv_regions:
-        regions = pd.read_csv(args.sv_regions, sep=", ")
-        print (regions)
-        for index, row in regions.iterrows():
-            # 1. Fetch the region from reference
-            chrm = row['chr']
-            start = row['start']
-            end = row['end']
-            sv_region_ref = ref.fetch(chrm, start, end)
-            # 2. Dump the unaltered region 
-            region_name = chrm + "_" + str(start) + "_" + str(end)
-            unaltered_regions_filename = os.path.join(args.out_dir, region_name + ".fa")
-
-            with open(os.path.join(unaltered_regions_filename), "w") as rf:
-                    rf.write(">" + region_name + "\n")
-                    rf.write(sv_region_ref)
-
+        # Read sv_regions file, if provided
+        regions = generate_regions_from_file(args.sv_regions)
     elif args.num_sv_regions:
         #Choose a random chromosome, a random region of 10kb within the chromosome
-        for idx in range(0, args.num_sv_regions):
-            chrm, start, end = generate_region(ref, args.len_sv_region)
-            sv_region_ref = ref.fetch(chrm, start, end)
-            # 2. Dump the unaltered region
-            region_name = chrm + "_" + str(start) + "_" + str(end)
-            unaltered_regions_filename = os.path.join(args.out_dir, region_name + ".fa")
+        regions = generate_random_regions(args.ref_file,
+                                          args.len_sv_region,
+                                          args.num_sv_regions)
 
-            with open(os.path.join(unaltered_regions_filename), "w") as rf:
-                    rf.write(">" + region_name + "\n")
-                    rf.write(sv_region_ref)
+    assert(regions is not None), "No regions to process. Please provide at least 1 region."
 
-
-    # 3. Call Survivor
-    #call_survivor()
-
+    process_regions(args.ref_file, regions, args.out_dir, args.survivor_param_file)
 
 
 if __name__ == '__main__':
