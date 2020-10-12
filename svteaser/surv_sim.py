@@ -3,7 +3,7 @@ import inspect
 import logging
 import argparse
 import subprocess
-
+import math
 from collections import OrderedDict
 from random import randint
 
@@ -147,7 +147,6 @@ def process_regions(ref_file, regions, out_dir, param_file):
                         "0",
                         prefix]
         subprocess.check_call(survivor_cmd, stdout=subprocess.DEVNULL, stderr=subprocess.STDOUT)
-
         # Read output of SURVIVOR
         altered_fa_path = "{}.fasta".format(prefix)
         insertions_fa_path = "{}.insertions.fa".format(prefix)
