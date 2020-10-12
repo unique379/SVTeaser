@@ -40,7 +40,7 @@ def correct_survivor_vcf(in_vcf):
     temp_file.close()
     return temp_file.name
 
-def update_vcf(ref, insertions, survivor_vcf, out_vcf):
+def update_vcf(ref, insertions, survivor_vcf, out_vcf, pos_padding=0):
     """Update the SURVIVOR VCF file to have ref and alt sequences for each variant entry.
 
     e.g. If a variant entry has the following VCF description
@@ -56,9 +56,9 @@ def update_vcf(ref, insertions, survivor_vcf, out_vcf):
         insertions : Path to SURVIVOR insertions fasta file.
         survivor_vcf : Path to SURVIVOR simulated VCF file.
         out_vcf : Putput path for updated SURVIVOR VCF.
+        pos_padding : Padding for start position in VCF.
     """
     survivor_vcf = correct_survivor_vcf(survivor_vcf)
-    logging.info(" ".join([ref, insertions, survivor_vcf, out_vcf]))
     ref = pysam.FastaFile(ref)
     try:
         insertions = pysam.FastaFile(insertions)
@@ -72,20 +72,22 @@ def update_vcf(ref, insertions, survivor_vcf, out_vcf):
     for record in vcf_reader:
         record = truvari.copy_entry(record, header)
         chrom = record.chrom
-        pos = record.pos
+        vcf_pos = record.pos # Position here is the VCF position, which is without padding.
+        ref_pos = record.pos + pos_padding # Reference pos is VCF pos shifted by padding.
         if record.id.startswith("INS"):
             # Handle an INSERTION entry
-            record.ref = ref.fetch(chrom, pos, pos + 1)
-            survivor_insertion_key = "{}_{}".format(chrom, pos)
+            record.ref = ref.fetch(chrom, ref_pos, ref_pos + 1)
+            survivor_insertion_key = "{}_{}".format(chrom, vcf_pos)
             record.alts = ["{}{}".format(record.ref, insertions.fetch(survivor_insertion_key))]
         elif record.id.startswith("DEL"):
             # Handle a DELETION entry
             svlen = record.info['SVLEN']
-            record.ref = ref.fetch(chrom, pos - 1, (pos - 1) + svlen + 1)
-            record.alts = [ref.fetch(chrom, pos - 1, pos)]
+            record.ref = ref.fetch(chrom, ref_pos - 1, (ref_pos - 1) + svlen + 1)
+            record.alts = [ref.fetch(chrom, ref_pos - 1, ref_pos)]
         else: # just in case inversions or something get through
             continue
-        print("handling outout")
+        # Update the VCF position to reflect padded sequence
+        record.pos = ref_pos
         vcf_writer.write(record)
 
 def parse_args(args):
