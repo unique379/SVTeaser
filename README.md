@@ -1,76 +1,34 @@
 # SVTeaser
 
-## Please cite our work -- here is the ICMJE Standard Citation:
+SV simulation for rapid benchmarking
 
-### ...and a link to the DOI:
+[Previous Work](https://genomebiology.biomedcentral.com/articles/10.1186/s13059-015-0803-1)
 
-## Awesome Logo
+[Hackathon Schedule](https://docs.google.com/document/d/1ychEMq4vXWtMQRGJD4re5ZzEyIDpb5o_cSBy3CPv2hg/edit#heading=h.5g50ovsn2k70)
 
-### You can make a free DOI with zenodo <link>
 
-## Website (if applicable)
+## Goals
 
-## Intro statement
+Make a tool that performs SV and read simulation to create inputs for benchmarking an SV caller. Create an evaluation/reporting procedure of the SV callers’ performance.
 
-## What's the problem?
 
-## Why should we solve it?
+## Overview Diagram
 
-# What is <this software>?
 
-Overview Diagram
+![](SVTeaser_Workflow.jpg)
 
-# How to use <this software>
 
-# Software Workflow Diagram
+## Working Notes/Documentation
+
+[Here](https://docs.google.com/document/d/1AQxiYEbBhN0-HCAOsrqHZxvsh4ZIFxxeVoJGxApmG-U/edit#)
 
 # File structure diagram 
 #### _Define paths, variable names, etc_
 
-# Installation options:
+## Installation
 
-We provide two options for installing <this software>: Docker or directly from Github.
+In progress
 
-### Docker
+## Quick Start
 
-The Docker image contains <this software> as well as a webserver and FTP server in case you want to deploy the FTP server. It does also contain a web server for testing the <this software> main website (but should only be used for debug purposes).
-
-1. `docker pull ncbihackathons/<this software>` command to pull the image from the DockerHub
-2. `docker run ncbihackathons/<this software>` Run the docker image from the master shell script
-3. Edit the configuration files as below
-
-### Installing <this software> from Github
-
-1. `git clone https://github.com/NCBI-Hackathons/<this software>.git`
-2. Edit the configuration files as below
-3. `sh server/<this software>.sh` to test
-4. Add cron job as required (to execute <this software>.sh script)
-
-### Configuration
-
-```Examples here```
-
-# Testing
-
-We tested four different tools with <this software>. They can be found in [server/tools/](server/tools/) . 
-
-# Additional Functionality
-
-### DockerFile
-
-<this software> comes with a Dockerfile which can be used to build the Docker image.
-
-  1. `git clone https://github.com/NCBI-Hackathons/<this software>.git`
-  2. `cd server`
-  3. `docker build --rm -t <this software>/<this software> .`
-  4. `docker run -t -i <this software>/<this software>`
-  
-### Website
-
-There is also a Docker image for hosting the main website. This should only be used for debug purposes.
-
-  1. `git clone https://github.com/NCBI-Hackathons/<this software>.git`
-  2. `cd Website`
-  3. `docker build --rm -t <this software>/website .`
-  4. `docker run -t -i <this software>/website`
-  
+In progress
