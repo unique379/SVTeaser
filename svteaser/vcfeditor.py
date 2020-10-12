@@ -83,7 +83,7 @@ def update_vcf(ref, insertions, survivor_vcf, out_vcf):
             continue
         vcf_writer.write(record)
 
-def parse_args():
+def parse_args(args):
     """Build parser object with options for sample.
 
     Returns:
@@ -92,23 +92,26 @@ def parse_args():
     parser = argparse.ArgumentParser(
         description="A VCF editing utility which adds ref and all sequences to a SURVIVOR fasta file.")
 
-    parser.add_argument("--reference-fasta", "-r",
-                        help="Reference fasta file.",
-                        required=True, type=str)
-    parser.add_argument("--survivor-insertions-fasta", "-i",
-                        help="Insertions fasta file from SURVIVOR.",
-                        required=True, type=str)
-    parser.add_argument("--survivor-vcf-file", "-v",
-                        help="VCF file from SURVIVOR.",
-                        required=True, type=str)
-    parser.add_argument("--output-vcf", "-o",
-                        help="Output path of edited VCF.",
-                        required=True, type=str)
-    return parser.parse_args()
+    parser.add_argument("--reference-fasta", "-r", required=True, type=str,
+                        help="Reference fasta file.")
+    parser.add_argument("--survivor-insertions-fasta", "-i", required=True, type=str,
+                        help="Insertions fasta file from SURVIVOR.")
+    parser.add_argument("--survivor-vcf-file", "-v", required=True, type=str,
+                        help="VCF file from SURVIVOR.")
+    parser.add_argument("--output-vcf", "-o", required=True, type=str,
+                        help="Output path of edited VCF.")
+    parser.add_argument("--debug", action="store_true", 
+                        help="Verbose logging")
+    args = parser.parse_args(args)
+    truvari.setup_logging(args.debug)
+    return args
 
 
-if __name__ == "__main__":
-    args = parse_args()
+def surv_vcf_fmt_main(args):
+    """
+    Main entry function to the tool
+    """
+    args = parse_args(args)
     update_vcf(args.reference_fasta,
                args.survivor_insertions_fasta,
                args.survivor_vcf_file,
