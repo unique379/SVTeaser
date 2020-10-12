@@ -92,9 +92,9 @@ def add_fasta_entry(name, seq, fasta_fh):
     fasta_fh.write(">{}\n".format(name))
     fasta_fh.write("{}\n".format(seq))
 
-def update_altered_fa(ref_seq, altered_ref_seq):
-    begin_seq = ref_seq[0:800]
-    end_seq = ref_seq[len(ref_seq)-800: ]
+def update_altered_fa(ref_seq, altered_ref_seq, padding):
+    begin_seq = ref_seq[0:padding]
+    end_seq = ref_seq[len(ref_seq)-padding: ]
     return begin_seq + altered_ref_seq + end_seq
 
 
@@ -108,6 +108,9 @@ def process_regions(ref_file, regions, out_dir, param_file):
     out_altered_fa_fh = open(out_altered_fa_path, "w+")
 
     ref = pysam.FastaFile(ref_file)
+
+    # Define padding in reference region where SVs are not to be inserted.
+    padding = 800
 
     for i, (chrom, start, end) in enumerate(regions):
         # Track status.
@@ -124,11 +127,11 @@ def process_regions(ref_file, regions, out_dir, param_file):
 
         # Remove first 800bp and last 800bp, so that the tails
         # do not contain SVs
-        ref_seq_surv = ref_seq[800:len(ref_seq)-800]
+        ref_seq_surv = ref_seq[padding:len(ref_seq)-padding]
         # Write ref sequence to temporary fa file.
         temp_ref_fa = os.path.join(temp_dir, "temp_ref.fa")
         with open(temp_ref_fa, "w") as fh:
-            add_fasta_entry(name, ref_seq, fh)
+            add_fasta_entry(name, ref_seq_surv, fh)
 
         # Run SURVIVOR.
         prefix = os.path.join(temp_dir, "simulated")
@@ -148,12 +151,12 @@ def process_regions(ref_file, regions, out_dir, param_file):
 
         # Update VCF
         temp_vcf = os.path.join(temp_dir, "temp.vcf")
-        update_vcf(temp_ref_fa, insertions_fa_path, sim_vcf, temp_vcf)
+        update_vcf(temp_ref_fa, insertions_fa_path, sim_vcf, temp_vcf, pos_padding=padding)
 
         # Merge seqs and variants entries into single FA/VCF files
         # Add the initial and last 800bp back to the altered fasta
         altered_seq = pysam.FastaFile(altered_fa_path).fetch(name)
-        altered_seq = update_altered_fa(ref_seq, altered_seq)
+        altered_seq = update_altered_fa(ref_seq, altered_seq, padding)
         add_fasta_entry(name, altered_seq, out_altered_fa_fh)
 
         add_fasta_entry(name, ref_seq, out_ref_fa_fh)
