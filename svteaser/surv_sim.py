@@ -36,6 +36,8 @@ def edit_surv_params(fn):
     params["DUPLICATION_number"] = 0
     params["INV_del_number"] = 0
     params["INV_dup_number"] = 0
+    params["INDEL_minimum_length"] = 50
+    params["INDEL_maximum_length"] = 5000
     with open(fn, 'w') as fout:
         for key, val in params.items():
             fout.write(f"{key}: {val}\n")
@@ -207,7 +209,8 @@ def surv_sim_main(args):
     assert(regions is not None), "No regions to process. Please provide at least 1 region."
 
     # Generate SURVIVOR param file
-    param_file = "/home/jdaw/hackathon/SVTeaser/svteaser/parameter_file"
+    param_file = os.path.join(os.path.dirname(os.path.realpath(__file__)), "parameter_file")
+    # TODO: Fix param file generation. Crashing with flaoting point exception for some reason...
     #param_file = os.path.join(args.output, "surv_params")
     #generate_surv_params(param_file)
     #edit_surv_params(param_file)
@@ -237,13 +240,13 @@ def parseArgs(args):
                         chr, start, end \
                         chr22, 1000, 20000 \
                         chr22, 50000, 80000', required=False)
-    parser.add_argument('--num_sv_regions', type=int,
+    parser.add_argument('--num_sv_regions', type=int, default=10,
                         help='Alternatively to the csv file defined by --sv_regions, user can also \
                               provide number of regions to generate SVs for. The programme will randomly \
                               choose locations within the genome to introduce the SVs. --sv_regions will be given priority \
                               if both options are provided.',
                         required=False)
-    parser.add_argument('--len_sv_region', type=int,
+    parser.add_argument('--len_sv_region', type=int, default=10000,
                         help='The length of regions to create.',
                         required=False)
     args = parser.parse_args(args)
