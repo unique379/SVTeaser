@@ -1,0 +1,22 @@
+{
+    "TP-base": 4217,
+    "TP-call": 4224,
+    "FP": 375,
+    "FN": 5424,
+    "precision": 0.918460534898891,
+    "recall": 0.43740275904989107,
+    "f1": 0.5925924447341656,
+    "base cnt": 9641,
+    "call cnt": 4592,
+    "base size filtered": 6309,
+    "call size filtered": 4,
+    "base gt filtered": 0,
+    "call gt filtered": 0,
+    "TP-call_TP-gt": 4111,
+    "TP-call_FP-gt": 113,
+    "TP-base_TP-gt": 4106,
+    "TP-base_FP-gt": 111,
+    "gt_precision": 0.8938899760817569,
+    "gt_recall": 0.43084994753410283,
+    "gt_f1": 0.5814461275461098
+}

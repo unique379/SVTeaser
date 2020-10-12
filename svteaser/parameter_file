@@ -2,8 +2,8 @@ PARAMETER FILE: DO JUST MODIFY THE VALUES AND KEEP THE SPACES!
 DUPLICATION_minimum_length: 0
 DUPLICATION_maximum_length: 0
 DUPLICATION_number: 0
-INDEL_minimum_length: 5
-INDEL_maximum_length: 10
+INDEL_minimum_length: 50
+INDEL_maximum_length: 5000
 INDEL_number: 1
 TRANSLOCATION_minimum_length: 0
 TRANSLOCATION_maximum_length: 0
