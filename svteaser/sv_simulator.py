@@ -92,6 +92,12 @@ def add_fasta_entry(name, seq, fasta_fh):
     fasta_fh.write(">{}\n".format(name))
     fasta_fh.write("{}\n".format(seq))
 
+def update_altered_fa(ref_seq, altered_ref_seq):
+    begin_seq = ref_seq[0:800]
+    end_seq = ref_seq[len(ref_seq)-800: ]
+    return begin_seq + altered_ref_seq + end_seq
+
+
 def process_regions(ref_file, regions, out_dir, param_file):
     out_vcf_path = os.path.join(out_dir, "svteaser.sim.vcf")
     out_ref_fa_path = os.path.join(out_dir, "svteaser.ref.fa")
@@ -116,6 +122,9 @@ def process_regions(ref_file, regions, out_dir, param_file):
         name = "{}_{}_{}".format(chrom, start, end)
         ref_seq = ref.fetch(chrom, start, end)
 
+        # Remove first 800bp and last 800bp, so that the tails
+        # do not contain SVs
+        ref_seq_surv = ref_seq[800:len(ref_seq)-800]
         # Write ref sequence to temporary fa file.
         temp_ref_fa = os.path.join(temp_dir, "temp_ref.fa")
         with open(temp_ref_fa, "w") as fh:
@@ -142,7 +151,9 @@ def process_regions(ref_file, regions, out_dir, param_file):
         update_vcf(temp_ref_fa, insertions_fa_path, sim_vcf, temp_vcf)
 
         # Merge seqs and variants entries into single FA/VCF files
+        # Add the initial and last 800bp back to the altered fasta
         altered_seq = pysam.FastaFile(altered_fa_path).fetch(name)
+        altered_seq = update_altered_fa(ref_seq, altered_seq)
         add_fasta_entry(name, altered_seq, out_altered_fa_fh)
 
         add_fasta_entry(name, ref_seq, out_ref_fa_fh)
