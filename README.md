@@ -32,6 +32,7 @@ Make a tool that performs SV and read simulation to create inputs for benchmarki
 - Put the `SURVIVOR` executable into your environment's PATH
 - Install [vcftools](https://vcftools.github.io/index.html)
 - Ensure `vcftools` (e.g. `vcf-sort`) is in your environment's PATH
+- Put [ART read simulator](https://www.niehs.nih.gov/research/resources/software/biostatistics/art/index.cfm) executable into your environment's PATH
 
 The three steps of this are handled by `bash install.sh`
 
