@@ -27,7 +27,10 @@ Make a tool that performs SV and read simulation to create inputs for benchmarki
 
 ## Installation
 
-In progress
+
+- Download and install [SURVIVOR](https://github.com/fritzsedlazeck/SURVIVOR.git)
+- Put the SURVIVOR executable into your environment's PATH
+
 
 ## Quick Start
 
