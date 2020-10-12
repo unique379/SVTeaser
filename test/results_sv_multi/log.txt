@@ -1,0 +1,57 @@
+2020-01-17 12:08:36,024 [INFO] Running /raid/home/english/pyve/bin/truvari -b /home/english/ajtrio/giab_calls/HG002_SVs_Tier1_v0.6.vcf.gz --includebed /home/english/ajtrio/giab_calls/HG002_SVs_Tier1_v0.6.bed --multimatch -c /home/english/science/english/WhitePaper/Quintuplicates/manta_results/rep1/variants.diploid.anno.vcf.gz --giabreport --passonly -o /home/english/science/english/WhitePaper/Quintuplicates/manta_results/rep1/bench/diploid_multi -f /reference/hs37d5/source.fasta
+2020-01-17 12:08:36,024 [INFO] Params:
+{
+    "base": "/home/english/ajtrio/giab_calls/HG002_SVs_Tier1_v0.6.vcf.gz",
+    "comp": "/home/english/science/english/WhitePaper/Quintuplicates/manta_results/rep1/variants.diploid.anno.vcf.gz",
+    "output": "/home/english/science/english/WhitePaper/Quintuplicates/manta_results/rep1/bench/diploid_multi",
+    "reference": "/reference/hs37d5/source.fasta",
+    "giabreport": true,
+    "debug": false,
+    "prog": false,
+    "refdist": 500,
+    "pctsim": 0.7,
+    "pctsize": 0.7,
+    "pctovl": 0.0,
+    "typeignore": false,
+    "gtcomp": false,
+    "bSample": null,
+    "cSample": null,
+    "sizemin": 50,
+    "sizefilt": 30,
+    "sizemax": 50000,
+    "passonly": true,
+    "no_ref": false,
+    "includebed": "/home/english/ajtrio/giab_calls/HG002_SVs_Tier1_v0.6.bed",
+    "multimatch": true
+}
+2020-01-17 12:08:38,263 [INFO] Including 34830 bed regions
+2020-01-17 12:08:38,263 [INFO] Creating call interval tree for overlap search
+2020-01-17 12:08:41,887 [INFO] 4866 call variants in total
+2020-01-17 12:08:41,887 [INFO] 4599 call variants within size range (30, 50000)
+2020-01-17 12:08:41,933 [INFO] Matching base to calls
+2020-01-17 12:09:03,297 [INFO] Results peek: 4217 TP-base 5424 FN 43.74% Recall
+2020-01-17 12:09:03,297 [INFO] Parsing FPs from calls
+2020-01-17 12:09:06,455 [INFO] Stats: {
+    "TP-base": 4217,
+    "TP-call": 4224,
+    "FP": 375,
+    "FN": 5424,
+    "precision": 0.918460534898891,
+    "recall": 0.43740275904989107,
+    "f1": 0.5925924447341656,
+    "base cnt": 9641,
+    "call cnt": 4592,
+    "base size filtered": 6309,
+    "call size filtered": 4,
+    "base gt filtered": 0,
+    "call gt filtered": 0,
+    "TP-call_TP-gt": 4111,
+    "TP-call_FP-gt": 113,
+    "TP-base_TP-gt": 4106,
+    "TP-base_FP-gt": 111,
+    "gt_precision": 0.8938899760817569,
+    "gt_recall": 0.43084994753410283,
+    "gt_f1": 0.5814461275461098
+}
+2020-01-17 12:09:06,455 [INFO] Creating GIAB report
+2020-01-17 12:09:07,745 [INFO] Finished
