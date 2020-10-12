@@ -67,3 +67,23 @@ Workflow:
 5. Open the `notebooks/SVTeaser.ipynb` and point to your `output.svt` directory
 
 See `test/workflow_test.sh` for an example
+
+## Component Details
+
+### SV Simulator
+Two methods for SV simulation are supported in `SVTeaser` - (_done_) simulation of SV with `SURVIVOR`
+and (_in progress_) simulation of SVs from VCFs.
+
+Running simulation in either mode results in an output directory of the following structure -
+```
+$ svteaser surv_sim reference.fasta workdir
+$ ll -h workdir
+total 2.3M
+drwxr-xr-x  2 user hardware 4.0K Oct 12 15:38 ./
+drwxr-xr-x 13 user hardware 4.0K Oct 12 15:38 ../
+-rw-r--r--  1 user hardware 1.1M Oct 12 15:38 svteaser.altered.fa # <---- Multi-FASTA with all altered region sequences
+-rw-r--r--  1 user hardware 980K Oct 12 15:38 svteaser.ref.fa     # <---- Multi-FASTA with all unaltered region sequences
+-rw-r--r--  1 user hardware 228K Oct 12 15:38 svteaser.sim.vcf    # <---- Combined VCF with variants from each region
+-rw-r--r--  1 user hardware  34K Oct 12 15:38 svteaser.sim.vcf.gz
+-rw-r--r--  1 user hardware  121 Oct 12 15:38 svteaser.sim.vcf.gz.tbi
+```
