@@ -59,7 +59,6 @@ def update_vcf(ref, insertions, survivor_vcf, out_vcf, pos_padding=0):
         pos_padding : Padding for start position in VCF.
     """
     survivor_vcf = correct_survivor_vcf(survivor_vcf)
-    logging.info(" ".join([ref, insertions, survivor_vcf, out_vcf]))
     ref = pysam.FastaFile(ref)
     try:
         insertions = pysam.FastaFile(insertions)

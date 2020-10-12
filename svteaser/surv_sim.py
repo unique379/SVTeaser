@@ -86,6 +86,10 @@ def generate_random_regions(ref_file, region_length, num_regions):
             if randidx not in chrom_randidx[chrom]:
                 region_list.append((chrom, start, end))
                 chrom_randidx[chrom].append(randidx)
+            else:
+                logging.critical("Unable to generate %d non-overlapping regions. Reference too short?", num_regions)
+                logging.error("Exiting")
+                exit(1)
         else:
             region_list.append((chrom, start, end))
             chrom_randidx[chrom] = [randidx]
