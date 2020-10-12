@@ -1,12 +1,13 @@
 
 # Main interface to generate structural variant simulations
 
-import pysam
-import pandas as pd
 import argparse
+import math
 import os
+import pandas as pd
+import pysam
+from random import randint, sample
 import subprocess
-from random import randint
 from vcfeditor import update_vcf
 import vcf
 
@@ -66,26 +67,35 @@ def generate_regions_from_file(regions_file):
         region_list.append((chrm, start, end))
     return region_list
 
+
+
 def generate_random_regions(ref_file, region_length, num_regions):
     def generate_region(ref, length):
-        chroms = []
-        for chrm in ref.references:
-            chroms.append(chrm)
 
-        chrmidx = randint(1, len(chroms))
-        chrm = chroms[chrmidx -1]
-        start = randint(1, ref.get_reference_length(chrm) - length)
+        chridx = randint(0, len(ref.references)-1)
+        chrom = ref.references[chridx]
+        chrom_length = ref.get_reference_length(chrom)
+        num_non_overlap_regions = math.floor(chrom_length/length)
+        randidx = randint(0,num_non_overlap_regions)
+
+        start = randidx*length
         end = start + length
-
-        # Offset by 1 since we started from 1 base for randint
-        return chrm, start - 1, end - 1
+        return randidx, chrom, start, end
 
     ref = pysam.Fastafile(ref_file)
 
+    # Dict to keep track of unique indices, to avoid duplication.
+    chrom_randidx = {}
     region_list = []
-    for idx in range(num_regions):
-        chrm, start, end = generate_region(ref, region_length)
-        region_list.append((chrm, start, end))
+    while len(region_list) != num_regions:
+        randidx, chrom, start, end = generate_region(ref, region_length) 
+        if chrom in chrom_randidx:
+            if randidx not in chrom_randidx[chrom]:
+                region_list.append((chrom, start, end))
+                chrom_randidx[chrom].append(randidx)
+        else:
+            region_list.append((chrom, start, end))
+            chrom_randidx[chrom] = [randidx]
     return region_list
 
 def add_fasta_entry(name, seq, fasta_fh):
@@ -97,7 +107,6 @@ def update_altered_fa(ref_seq, altered_ref_seq, padding):
     end_seq = ref_seq[len(ref_seq)-padding: ]
     return begin_seq + altered_ref_seq + end_seq
 
-
 def process_regions(ref_file, regions, out_dir, param_file):
     out_vcf_path = os.path.join(out_dir, "svteaser.sim.vcf")
     out_ref_fa_path = os.path.join(out_dir, "svteaser.ref.fa")
@@ -108,7 +117,6 @@ def process_regions(ref_file, regions, out_dir, param_file):
     out_altered_fa_fh = open(out_altered_fa_path, "w+")
 
     ref = pysam.FastaFile(ref_file)
-
     # Define padding in reference region where SVs are not to be inserted.
     padding = 800
 
@@ -117,11 +125,11 @@ def process_regions(ref_file, regions, out_dir, param_file):
         if (i + 1) % 50 == 0:
             print("Processed {}/{} regions...".format(i + 1, len(regions)))
 
-        # Temporari dir.
+        # Temporary dir.
         temp_dir = os.path.join(out_dir, "temp")
         os.mkdir(temp_dir)
 
-        # Extract ref seequebce.
+        # Extract ref sequence.
         name = "{}_{}_{}".format(chrom, start, end)
         ref_seq = ref.fetch(chrom, start, end)
 
