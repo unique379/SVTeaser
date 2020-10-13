@@ -6,7 +6,7 @@ from svteaser.vcfeditor import surv_vcf_fmt_main
 from svteaser.surv_sim import surv_sim_main
 from svteaser.read_simulator import sim_reads_main
 
-VERSION="0.0.1"
+VERSION="0.0.2"
 
 def in_progress(args):
     """placeholder"""

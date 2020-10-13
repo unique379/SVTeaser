@@ -13,8 +13,8 @@ def sim_reads_art(workdir, coverage=30, readlen=150, meanfrag=400, insertsd=50, 
     """
     ret = cmd_exe("which art_illumina")
     if ret.ret_code != 0:
-        logging.error("Cannot fine art_illumina executable in the environment")
-        exit(ret.retcode)
+        logging.error("Cannot find art_illumina executable in the environment")
+        exit(ret.ret_code)
     try:
         os.chdir(workdir)
     except OSError:

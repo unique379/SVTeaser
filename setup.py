@@ -2,7 +2,7 @@ from setuptools import setup
 
 setup(
     name='SVTeaser',
-    version='0.0.1',
+    version='0.0.2',
     author="ACEnglish",
     author_email="acenglish@gmail.com",
     url="https://github.com/collaborativebioinformatics/SVTeaser",

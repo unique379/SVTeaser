@@ -139,6 +139,7 @@ def process_regions(ref_file, regions, out_dir, param_file):
     out_altered_fa_path = os.path.join(out_dir, "svteaser.altered.fa")
 
     out_vcf_fh = None
+    header = None
     out_ref_fa_fh = open(out_ref_fa_path, "w+")
     out_altered_fa_fh = open(out_altered_fa_path, "w+")
 
@@ -198,12 +199,17 @@ def process_regions(ref_file, regions, out_dir, param_file):
         add_fasta_entry(name, ref_seq, out_ref_fa_fh)
 
         vcf_reader = pysam.VariantFile(temp_vcf)
-        header = vcf_reader.header
         if not out_vcf_fh:
+            header = vcf_reader.header
             out_vcf_fh = pysam.VariantFile(out_vcf_path, 'w', header=header)
 
+        
+        n_entries = 0
         for record in vcf_reader:
+            n_entries += 1
+            logging.debug("why...? %s", entry.chrom)
             out_vcf_fh.write(record)
+        logging.debug("And now i've done %d", n_entries)
 
         # Remove temporary files.
         import shutil
