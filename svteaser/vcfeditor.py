@@ -24,6 +24,7 @@ def correct_survivor_vcf(in_vcf):
                           '##INFO=<ID=PRECISE,Number=1,Type=Flag,Description="Some type of flag">'])
 
     temp_file = NamedTemporaryFile(suffix=".vcf", mode='w', delete=False) 
+    n_entries = 0
     with open(in_vcf, 'r') as fh:
         for line in fh:
             if line.startswith("##"):
@@ -37,6 +38,8 @@ def correct_survivor_vcf(in_vcf):
             line = re.sub(":GL:GQ:FT:RC:DR:DV:RR:RV", "", line)
             line = re.sub("LowQual", ".", line)
             temp_file.write(line)
+            n_entries += 1
+    logging.debug("Corrected %d entries", n_entries)
     temp_file.close()
     return temp_file.name
 
@@ -58,6 +61,7 @@ def update_vcf(ref, insertions, survivor_vcf, out_vcf, pos_padding=0):
         out_vcf : Putput path for updated SURVIVOR VCF.
         pos_padding : Padding for start position in VCF.
     """
+    logging.debug("updating")
     survivor_vcf = correct_survivor_vcf(survivor_vcf)
     ref = pysam.FastaFile(ref)
     try:
@@ -69,7 +73,9 @@ def update_vcf(ref, insertions, survivor_vcf, out_vcf, pos_padding=0):
     vcf_reader = pysam.VariantFile(survivor_vcf)
     header = vcf_reader.header
     vcf_writer = pysam.VariantFile(out_vcf, 'w', header=header)
+    n_entries = 0
     for record in vcf_reader:
+        n_entries += 1
         record = truvari.copy_entry(record, header)
         chrom = record.chrom
         vcf_pos = record.pos # Position here is the VCF position, which is without padding.
@@ -89,6 +95,7 @@ def update_vcf(ref, insertions, survivor_vcf, out_vcf, pos_padding=0):
         # Update the VCF position to reflect padded sequence
         record.pos = ref_pos
         vcf_writer.write(record)
+    logging.info("Updated %d entries", n_entries)
 
 def parse_args(args):
     """Build parser object with options for sample.
