@@ -102,12 +102,18 @@ def generate_random_regions(ref_file, region_length, num_regions):
     while len(region_list) != num_regions:
         loop_count = loop_count + 1
         randidx, chrom, start, end = generate_region(ref, region_length) 
+
+        # If the region contains "N", then discard this turn.
+        reg_string = ref.fetch(chrom, start, end)
+        if "N" in reg_string:
+            continue
+
         if chrom in chrom_randidx:
             if randidx not in chrom_randidx[chrom]:
                 region_list.append((chrom, start, end))
                 chrom_randidx[chrom].append(randidx)
             if loop_count == num_tries:
-                logging.critical("Unable to generate %d non-overlapping regions. Reference too short?", num_regions)
+                logging.critical("Unable to generate %d non-overlapping regions. Tried %d times", (num_regions, num_tries))
                 logging.error("Exiting")
                 exit(1)
         else:
