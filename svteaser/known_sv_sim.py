@@ -96,7 +96,12 @@ def known_sv_sim_main(args):
     final_contigs = generate_altered_ref(args.reference, args.sv_vcf)
     serialize_contigs_to_fa(final_contigs, os.path.join(args.output, "svteaser.altered.fa"))
     shutil.copyfile(args.reference, os.path.join(args.output, "svteaser.ref.fa"))
-    shutil.copyfile(args.sv_vcf, os.path.join(args.output, "svteaser.sim.vcf"))
+    if ".gz" in args.sv_vcf:
+        shutil.copyfile(args.sv_vcf, os.path.join(args.output, "svteaser.sim.vcf.gz"))
+    else:
+        path = shutil.copyfile(args.sv_vcf, os.path.join(args.output, "svteaser.sim.vcf"))
+        shutil.copyfile(args.sv_vcf, path)
+        vcf_compress(path)
 
     logging.info("Finished")
 
