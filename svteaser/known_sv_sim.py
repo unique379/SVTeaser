@@ -20,7 +20,7 @@ def serialize_contigs_to_fa(contigs, fa_path):
             fh.write(">{}\n".format(contig))
             fh.write("{}\n".format(seq))
 
-def generate_altered_ref(ref_file, sv_vcf):
+def generate_altered_ref(ref_file, sv_vcf, copy_unaltered_contigs):
     """
     Generate altered ref sequence and return.
     """
@@ -71,11 +71,15 @@ def generate_altered_ref(ref_file, sv_vcf):
 
     # Grab any non variant contigs in final list from original reference.
     final_contigs = []
-    for contig in reference.references:
-        if contig not in alt_contigs:
-            final_contigs.append((contig, reference.fetch(contig)))
-        else:
-            final_contigs.append((contig, alt_contigs[contig]))
+    if copy_unaltered_contigs:
+        for contig in reference.references:
+            if contig not in alt_contigs:
+                final_contigs.append((contig, reference.fetch(contig)))
+            else:
+                final_contigs.append((contig, alt_contigs[contig]))
+    else:
+        for contig, seq in alt_contigs.items():
+            final_contigs.append((contig, seq))
 
     return final_contigs
 
@@ -93,7 +97,7 @@ def known_sv_sim_main(args):
         logging.error(f"Output directory {args.output} already exists")
         exit(1)
 
-    final_contigs = generate_altered_ref(args.reference, args.sv_vcf)
+    final_contigs = generate_altered_ref(args.reference, args.sv_vcf, args.copy_unaltered_contigs)
     serialize_contigs_to_fa(final_contigs, os.path.join(args.output, "svteaser.altered.fa"))
     shutil.copyfile(args.reference, os.path.join(args.output, "svteaser.ref.fa"))
     if ".gz" in args.sv_vcf:
@@ -121,6 +125,8 @@ def parseArgs(args):
                         help="SVTeaser output basename (%(default)s)")
     parser.add_argument("--debug", action="store_true",
                         help="Verbose logging")
+    parser.add_argument("--copy_unaltered_contigs", action="store_true",
+                        help="Save both altered and UNaltered contigs from reference into altered fasta. Default to save only altered contigs.")
     args = parser.parse_args(args)
     args.reference = os.path.abspath(args.reference)
     args.output = args.output + ".svt"
