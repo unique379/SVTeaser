@@ -140,6 +140,7 @@ def process_regions(ref_file, regions, out_dir, param_file):
     out_altered_fa_path = os.path.join(out_dir, "svteaser.altered.fa")
     from io import StringIO
     out_vcf_fh = StringIO()
+
     header = None
     out_ref_fa_fh = open(out_ref_fa_path, "w+")
     out_altered_fa_fh = open(out_altered_fa_path, "w+")
@@ -218,6 +219,7 @@ def process_regions(ref_file, regions, out_dir, param_file):
             logging.debug("why?... %s", record.chrom)
             out_vcf_fh.write(str(record))
         logging.debug("Should have %d more", n_entries)
+
 
         # Remove temporary files.
         shutil.rmtree(temp_dir)

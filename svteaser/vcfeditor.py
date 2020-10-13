@@ -20,6 +20,7 @@ def correct_survivor_vcf(in_vcf):
     Correct survivor vcf mistakes so it's parsable by pysam.VariantFile
     Returns the name of the temporary file that's c
     """
+    logging.debug("Correcting")
     extra_header = "\n".join(['##FILTER=<ID=LowQual,Description="Default. Manual">',
                           '##INFO=<ID=PRECISE,Number=1,Type=Flag,Description="Some type of flag">'])
 
@@ -35,6 +36,7 @@ def correct_survivor_vcf(in_vcf):
                 line = line.strip() + "\tSAMPLE\n"
                 temp_file.write(line)
                 continue
+            n_entries += 1
             line = re.sub(":GL:GQ:FT:RC:DR:DV:RR:RV", "", line)
             line = re.sub("LowQual", ".", line)
             temp_file.write(line)
