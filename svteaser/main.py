@@ -5,8 +5,9 @@ import argparse
 from svteaser.vcfeditor import surv_vcf_fmt_main
 from svteaser.surv_sim import surv_sim_main
 from svteaser.read_simulator import sim_reads_main
+from svteaser.known_sv_sim import known_sv_sim_main
 
-VERSION="0.0.1"
+VERSION="0.0.2"
 
 def in_progress(args):
     """placeholder"""
@@ -20,6 +21,7 @@ TOOLS = {'surv_sim': surv_sim_main,
          'sim_sv': in_progress,
          'surv_vcf_fmt': surv_vcf_fmt_main,
          'sim_reads': sim_reads_main,
+         'known_sv_sim' : known_sv_sim_main,
         }
 
 USAGE = """\
@@ -28,6 +30,7 @@ SVTeaser v%s - SV simulation for rapid benchmarking
     CMDs:
         sim_sv          Simulate SVs
         surv_sim        Simulate SVs with SURVIVOR
+        known_sv_sim    Simulate known SVs from VCF
         surv_vcf_fmt    Correct a SURVIVOR simSV vcf
         sim_reads       Run read simulators
 """ % VERSION
