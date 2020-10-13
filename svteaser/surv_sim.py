@@ -64,6 +64,19 @@ def generate_regions_from_file(regions_file):
         region_list.append((chrm, start, end))
     return region_list
 
+def verify_requested_regions(ref, num_regions, length):
+    total_regions = 0
+    for chrom in ref.references:
+        chrom_length = ref.get_reference_length(chrom)
+        total_regions = total_regions + math.floor(chrom_length/length)
+
+    if total_regions < num_regions:
+        logging.critical("Unable to generate %d non-overlapping regions. Reference too short?", num_regions)
+        logging.critical("Generating %d non-overlapping regions", total_regions)
+        return total_regions
+    else:
+        return num_regions
+
 def generate_random_regions(ref_file, region_length, num_regions):
     def generate_region(ref, length):
         chridx = randint(0, len(ref.references)-1)
@@ -80,14 +93,27 @@ def generate_random_regions(ref_file, region_length, num_regions):
 
     region_list = []
     chrom_randidx = {}
+
+    num_regions = verify_requested_regions(ref, num_regions, region_length)
+
+    # We let the while loop run for num_tries before exiting. 
+    num_tries = 2*num_regions
+    loop_count = 0
     while len(region_list) != num_regions:
+        loop_count = loop_count + 1
         randidx, chrom, start, end = generate_region(ref, region_length) 
+
+        # If the region contains "N", then discard this turn.
+        reg_string = ref.fetch(chrom, start, end)
+        if "N" in reg_string:
+            continue
+
         if chrom in chrom_randidx:
             if randidx not in chrom_randidx[chrom]:
                 region_list.append((chrom, start, end))
                 chrom_randidx[chrom].append(randidx)
-            else:
-                logging.critical("Unable to generate %d non-overlapping regions. Reference too short?", num_regions)
+            if loop_count == num_tries:
+                logging.critical("Unable to generate %d non-overlapping regions. Tried %d times", (num_regions, num_tries))
                 logging.error("Exiting")
                 exit(1)
         else:
