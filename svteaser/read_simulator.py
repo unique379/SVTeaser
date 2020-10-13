@@ -22,10 +22,12 @@ def sim_reads_art(workdir, outdir=None, coverage=30, readlen=150, meanfrag=400, 
         exit(1)
     alt_ref = 'svteaser.altered.fa'
     if outdir is None:
-        outdir = workdir
-
-    # Useful when running on same altered reference but different parameters
-    out_path = os.path.join(outdir, "art_illumina.simReads")
+        out_path = "art_illumina.simReads"
+    else:
+        os.mkdir(outdir)
+        # Useful when running on same altered reference but different parameters
+        out_path = os.path.join(outdir, "art_illumina.simReads")
+    print (out_path)
     ret = cmd_exe((f"art_illumina -ss {instrument} -sam -na -i {alt_ref} -p "
                    f"-l {readlen} -m {meanfrag} -s {insertsd} -f {coverage} -o {out_path}"))
     if ret.ret_code != 0:
